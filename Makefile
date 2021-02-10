@@ -1,4 +1,4 @@
 all:
-	bison -d parser.y
-	flex parser.lex
+	bison -d parser/parser.y
+	flex parser/parser.lex
 	gcc *.c -g -o machine
