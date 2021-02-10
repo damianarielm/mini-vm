@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdio.h>
 #include "machine.h"
+
+int yylex();
+void yyerror(const char* s);
 %}
 
 %union {
