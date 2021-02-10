@@ -20,7 +20,7 @@ int reg(const char* r) {
   if (!strcmp(r, "flags")) return FLAGS;
 
   printf("Unkown Register %s\n", r);
-  abort();
+  exit(6);
 }
 %}
 
