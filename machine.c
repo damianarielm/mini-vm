@@ -1,5 +1,3 @@
-// gcc machine.c lex.yy.c parser.tab.c
-
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -11,7 +9,8 @@
 // Variables globales
 int count; // Lineas de codigo
 struct Instruction code[512]; // Arreglo de instrucciones
-const char *regname[REGS] = { "\%zero", "\%pc", "\%sp", "\%r0","\%r1","\%r2","\%r3", "\%flags"};
+const char *regname[REGS] = { "\%zero", "\%pc", "\%sp", "\%r0",
+                              "\%r1","\%r2","\%r3", "\%flags" };
 struct Machine machine;
 extern FILE *yyin;
 
@@ -22,34 +21,47 @@ char breakpoint = 0;
 // Devuelve el numero de registro
 int reg(const char* r) {
   r++; // Skip %
-  if (!strcmp(r,"zero")) return 0;
-  if (!strcmp(r,"pc")) return 1;
-  if (!strcmp(r,"sp")) return 2;
-  if (!strcmp(r,"r0")) return 3;
-  if (!strcmp(r,"r1")) return 4;
-  if (!strcmp(r,"r2")) return 5;
-  if (!strcmp(r,"r3")) return 6;
-  if (!strcmp(r,"flags")) return 7;
-  printf("Unkown Register %s\n",r);
+
+  if (!strcmp(r, "zero"))  return 0;
+  if (!strcmp(r, "pc"))    return 1;
+  if (!strcmp(r, "sp"))    return 2;
+  if (!strcmp(r, "r0"))    return 3;
+  if (!strcmp(r, "r1"))    return 4;
+  if (!strcmp(r, "r2"))    return 5;
+  if (!strcmp(r, "r3"))    return 6;
+  if (!strcmp(r, "flags")) return 7;
+
+  printf("Unkown Register %s\n", r);
   abort();
 }
 
 // Volcado de registros
 void dumpMachine() {
-  printf("************************ Machine state at PC=%d **********************\n", machine.reg[PC]);
-  for (int i = 0; i < REGS; i++) 
-    if (strlen(regname[i])==0) continue; 
-    else printf("%d\t%s\t\t\t= \t\t%d \t\t%x\n", i, regname[i],machine.reg[i],machine.reg[i]);
-  printf("**********************************************************************\n");
+  printf("\n******* ");
+  printf("Machine state at PC = %d", machine.reg[PC]);
+  printf(" ********\n");
+
+  for (int i = 0; i < REGS; i++)
+    if (strlen(regname[i])) {
+        printf("%d\t%s\t\t= ", i, regname[i]);
+        printf("%d\t(0x%x)\n", machine.reg[i], machine.reg[i]);
+    }
+
+  puts("***************************************\n");
 }
 
 // Volcado de memoria
 void dumpMemory() {
-  printf("***************** Memory state at PC=%d ***************\n", machine.reg[PC]);
+  printf("*************** ");
+  printf("Memory state at PC = %d", machine.reg[PC]);
+  printf(" ****************\n");
+
   for (int i = 0; i < MEM_SIZE; i++) {
-    printf("%d: %d\t", i, machine.memory[i]);
+    printf("%d=%d\t", i, machine.memory[i]);
+    if (i && (i + 1) % 7 == 0) puts("");
   }
-  printf("\n********************************************************\n");
+
+  puts("\n*******************************************************\n");
 }
 
 int origen(struct Operand o) {
@@ -59,19 +71,27 @@ int origen(struct Operand o) {
     case REG:
       return machine.reg[o.val];
     case MEM:
-      if (o.lab) return machine.memory[machine.reg[o.val]];
-      else return machine.memory[o.val];
+      if (o.lab)
+        return machine.memory[machine.reg[o.val]];
+      else
+        return machine.memory[o.val];
   }
 }
 
 int* destino(struct Operand o) {
   switch(o.type) {
     case REG:
-      if (o.val == ZERO) { printf("Error. Intentando modificar el registro zero.\n"); abort(); }
-      else { return &(machine.reg[o.val]); }
+      if (o.val == ZERO) {
+        printf("Error. Intentando modificar el registro zero.\n");
+        abort();
+      } else {
+        return &(machine.reg[o.val]);
+      }
     case MEM:
-      if (ISSET_SEGMENTATION && o.val < count) return NULL;
-      else return &(machine.memory[o.val]);
+      if (ISSET_SEGMENTATION && o.val < count)
+        return NULL;
+      else
+        return &(machine.memory[o.val]);
   }
 }
 
@@ -152,7 +172,7 @@ void runIns(struct Instruction i) {
         SET_EQUAL;
       } else {
         UNSET_EQUAL;
-	if (o1 < o2) SET_LOWER;
+        if (o1 < o2) SET_LOWER;
       }
       break;
     case JMP:
@@ -185,27 +205,27 @@ void runIns(struct Instruction i) {
 
 // Reemplaza las etiquetas por valores inmediatos
 void processLabels() {
-  int i,j,k;
-  for (i=0;i<count;i++) { // Recorre el codigo...
-    if (code[i].op==LABEL) { // ...en busca de una etiqueta
-      for (j=0;j<count;j++) { // Recorre el codigo...
+  int i, j, k;
+  for (i=0; i < count; i++) { // Recorre el codigo...
+    if (code[i].op == LABEL) { // ...en busca de una etiqueta
+      for (j = 0; j < count; j++) { // Recorre el codigo...
         if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) { // ...buscando un salto
-          if (code[j].src.lab && strcmp(code[j].src.lab,code[i].src.lab)==0) { // Si el salto corresponde a la etiqueta
-            code[j].src.type=IMM;
-            code[j].src.val=i; // Agrega el numero de linea
-            code[j].src.lab=NULL; // Borra la etiqueta de la instruccion
+          if (code[j].src.lab && strcmp(code[j].src.lab,code[i].src.lab) == 0) { // Si el salto corresponde a la etiqueta
+            code[j].src.type = IMM;
+            code[j].src.val = i; // Agrega el numero de linea
+            code[j].src.lab = NULL; // Borra la etiqueta de la instruccion
           }
         }
       }
       // Borra la etiqueta del codigo
-      for (j=i;j<count-1;j++) {
-        code[j]=code[j+1];
+      for (j = i; j < count - 1; j++) {
+        code[j] = code[j + 1];
       }
-      count--;      
+      count--;
     }
   }
   // Chequea que todas las etiquetas existan
-  for (j=0;j<count;j++) {
+  for (j = 0; j < count; j++) {
     if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) {
       if (code[j].src.lab) {
         printf("Jump to unkown label %s\n",code[j].src.lab);
@@ -227,7 +247,7 @@ void printOperand(struct Operand s) {
       if (s.lab) printf("(%s)", regname[s.val]);
       else printf("%d", s.val);
       break;
-  } 
+  }
 }
 
 void printInstr(struct Instruction i) {
@@ -361,7 +381,7 @@ void printCode() {
 void debug() {
   char comando[100];
   int direccion, valor;
-  
+
   while (1) {
     printf("Ingrese comando (h para ayuda): ");
     scanf("%s", comando);
@@ -392,13 +412,13 @@ void debug() {
         scanf("%d", &direccion);
         printf("Ingrese el nuevo valor: ");
         scanf("%d", &valor);
-	machine.memory[direccion] = valor;
+        machine.memory[direccion] = valor;
       } else {
         printf("Ingrese un numero de registro: ");
         scanf("%d", &direccion);
         printf("Ingrese el nuevo valor: ");
         scanf("%d", &valor);
-	machine.reg[direccion] = valor;
+        machine.reg[direccion] = valor;
       }
     }
     if (*comando == 'h') {
@@ -447,7 +467,7 @@ void run() {
     } else {
       runIns(i); // Ejecuta la instruccion
     }
-    
+
     machine.reg[PC]++; // If not a jump, continue with next instruction
   } while (i.op != HLT);
 }
@@ -463,7 +483,7 @@ void init(int argc, char** argv) {
   machine.reg[R1] = 0;
   machine.reg[R2] = 0;
   machine.reg[R3] = 0;
-  
+
   // Inicializa memoria
   for(int i = 0; i < MEM_SIZE; i++) machine.memory[i] = 0;
 

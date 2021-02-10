@@ -43,7 +43,7 @@ typedef enum { IMM, REG, MEM, LABELOP } OperandType ;
 
 struct Operand {
   const char *lab;
-  OperandType type; 
+  OperandType type;
   int val;
 } ;
 
@@ -67,7 +67,7 @@ typedef enum {
   JMP,
   JMPE,
   JMPL,
-  HLT, 
+  HLT,
   LABEL,
   DMP,
   DBG,
@@ -76,7 +76,7 @@ typedef enum {
 
 struct Instruction {
   Opcode op;
-  struct Operand src; 
+  struct Operand src;
   struct Operand dst;
 } ;
 
