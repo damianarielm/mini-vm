@@ -104,134 +104,129 @@ void runIns(struct Instruction i) {
   switch (i.op) {
     case NOP:
       break;
-    case MOV: {
-                *d2 = o1;
-                break;
-              }
+    case MOV:
+      *d2 = o1;
+      break;
     case SW:
-              machine.memory[o2] = o1;
-              break;
-    case LW: {
-               *d2 = machine.memory[o1];
-               break;
-             }
+      machine.memory[o2] = o1;
+      break;
+    case LW:
+      *d2 = machine.memory[o1];
+      break;
     case PUSH:
-             machine.reg[SP]--;
-             machine.memory[machine.reg[SP]] = o1;
-             break;
-    case POP: {
-                *d1 = machine.memory[machine.reg[SP]];
-                machine.reg[SP]++;
-                break;
-              }
+      machine.reg[SP]--;
+      machine.memory[machine.reg[SP]] = o1;
+      break;
+    case POP:
+      *d1 = machine.memory[machine.reg[SP]];
+      machine.reg[SP]++;
+      break;
     case CALL:
-              machine.reg[SP]--;
-              machine.memory[machine.reg[SP]] = machine.reg[PC];
-              machine.reg[PC] = o1 - 1;
-              break;
+      machine.reg[SP]--;
+      machine.memory[machine.reg[SP]] = machine.reg[PC];
+      machine.reg[PC] = o1 - 1;
+      break;
     case RET:
-              machine.reg[PC] = machine.memory[machine.reg[SP]];
-              machine.reg[SP]++;
-              break;
+      machine.reg[PC] = machine.memory[machine.reg[SP]];
+      machine.reg[SP]++;
+      break;
     case PRINT:
-              printf("%d\n", o1);
-              break;
-    case READ: {
-                 scanf("%d", d1);
-                 break;
-               }
-    case ADD: {
-                *d2 = o1 + o2;
-                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-                break;
-              }
-    case SUB: {
-                *d2 = o1 - o2;
-                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-                break;
-              }
-    case MUL: {
-                *d2 = o1 * o2;
-                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-                break;
-              }
-    case DIV: {
-                *d2 = o1 / o2;
-                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-                break;
-              }
-    case AND: {
-                *d2 = o1 & o2;
-                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-                break;
-              }
+      printf("%d\n", o1);
+      break;
+    case READ:
+      scanf("%d", d1);
+      break;
+    case ADD:
+      *d2 = o1 + o2;
+      if (*d2 == 0) SET_ZERO;
+      else UNSET_ZERO;
+      break;
+    case SUB:
+      *d2 = o1 - o2;
+      if (*d2 == 0) SET_ZERO;
+      else UNSET_ZERO;
+      break;
+    case MUL:
+      *d2 = o1 * o2;
+      if (*d2 == 0) SET_ZERO;
+      else UNSET_ZERO;
+      break;
+    case DIV:
+      *d2 = o1 / o2;
+      if (*d2 == 0) SET_ZERO;
+      else UNSET_ZERO;
+      break;
+    case AND:
+      *d2 = o1 & o2;
+      if (*d2 == 0) SET_ZERO;
+      else UNSET_ZERO;
+      break;
     case CMP:
-              if (o1 == o2) {
-                UNSET_LOWER;
-                SET_EQUAL;
-              } else {
-                UNSET_EQUAL;
-                if (o1 < o2) SET_LOWER;
-              }
-              break;
+      if (o1 == o2) {
+          UNSET_LOWER;
+          SET_EQUAL;
+      } else {
+          UNSET_EQUAL;
+          if (o1 < o2) SET_LOWER;
+      }
+      break;
     case JMP:
-              machine.reg[PC] = o1 - 1;
-              break;
+      machine.reg[PC] = o1 - 1;
+      break;
     case JMPE:
-              if (ISSET_EQUAL) machine.reg[PC] = o1 - 1;
-              break;
+      if (ISSET_EQUAL) machine.reg[PC] = o1 - 1;
+      break;
     case JMPL:
-              if (ISSET_LOWER) machine.reg[PC] = o1 - 1;
-              break;
+      if (ISSET_LOWER) machine.reg[PC] = o1 - 1;
+      break;
     case DMP:
-              dumpMachine();
-              dumpMemory();
-              break;
+      dumpMachine();
+      dumpMemory();
+      break;
     case DBG:
-              if (ISSET_DEBUG) UNSET_DEBUG; else SET_DEBUG;
-              break;
+      if (ISSET_DEBUG) UNSET_DEBUG;
+      else SET_DEBUG;
+      break;
     case SEG:
-              if (ISSET_SEGMENTATION) UNSET_SEGMENTATION; else SET_SEGMENTATION;
-              break;
+      if (ISSET_SEGMENTATION) UNSET_SEGMENTATION;
+      else SET_SEGMENTATION;
+      break;
     case HLT:
-              machine.reg[PC]--;
-              break;
+      machine.reg[PC]--;
+      break;
     default:
-              printf("Instruction not implemented\n");
-              abort();
+      printf("Instruction not implemented\n");
+      abort();
   }
 }
 
 // Reemplaza las etiquetas por valores inmediatos
 void processLabels() {
   int i, j, k;
-  for (i=0; i < count; i++) { // Recorre el codigo...
+  for (i = 0; i < count; i++) // Recorre el codigo...
     if (code[i].op == LABEL) { // ...en busca de una etiqueta
-      for (j = 0; j < count; j++) { // Recorre el codigo...
-        if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) { // ...buscando un salto
+      for (j = 0; j < count; j++) // Recorre el codigo...
+        if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) // ...buscando un salto
           if (code[j].src.lab && strcmp(code[j].src.lab,code[i].src.lab) == 0) { // Si el salto corresponde a la etiqueta
             code[j].src.type = IMM;
             code[j].src.val = i; // Agrega el numero de linea
             code[j].src.lab = NULL; // Borra la etiqueta de la instruccion
           }
-        }
-      }
+
       // Borra la etiqueta del codigo
-      for (j = i; j < count - 1; j++) {
+      for (j = i; j < count - 1; j++)
         code[j] = code[j + 1];
-      }
+
       count--;
     }
-  }
+
   // Chequea que todas las etiquetas existan
-  for (j = 0; j < count; j++) {
-    if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) {
+  for (j = 0; j < count; j++)
+    if (code[j].op == CALL || code[j].op == JMP || code[j].op == JMPE || code[j].op == JMPL)
       if (code[j].src.lab) {
-        printf("Jump to unkown label %s\n",code[j].src.lab);
+        printf("Jump to unkown label %s\n", code[j].src.lab);
         exit(-1);
       }
-    }
-  }
 }
 
 void printOperand(struct Operand s) {
@@ -302,20 +297,17 @@ void printInstr(struct Instruction i) {
     case JMPL:
       printf("JMPL ");
       printOperand(i.src);
-      if (i.src.lab)
-        printf("%s",i.src.lab);
+      if (i.src.lab) printf("%s",i.src.lab);
       break;
     case JMPE:
       printf("JMPE ");
       printOperand(i.src);
-      if (i.src.lab)
-        printf("%s",i.src.lab);
+      if (i.src.lab) printf("%s",i.src.lab);
       break;
     case JMP:
       printf("JMP ");
       printOperand(i.src);
-      if (i.src.lab)
-        printf("%s",i.src.lab);
+      if (i.src.lab) printf("%s",i.src.lab);
       break;
     case LABEL:
       printf("LABEL %s",i.src.lab);
@@ -345,8 +337,7 @@ void printInstr(struct Instruction i) {
     case CALL:
       printf("CALL ");
       printOperand(i.src);
-      if (i.src.lab)
-        printf("%s",i.src.lab);
+      if (i.src.lab) printf("%s",i.src.lab);
       break;
     case RET:
       printf("RET ");
@@ -362,11 +353,12 @@ void printInstr(struct Instruction i) {
 }
 
 struct Instruction* getInstruction(int linea) {
-  return (struct Instruction*) &(machine.memory[linea*SIZE_INSTRUCTION/sizeof(int)]);
+  return (struct Instruction*) &(machine.memory[linea * SIZE_INSTRUCTION / sizeof(int)]);
 }
 
 void printCode() {
   printf("\n*****Codigo******\n");
+
   for (int j = 0; j < count; j++)  {
     if (j == machine.reg[PC]) printf(">> ");
     printf("%d: ",j);
@@ -374,6 +366,7 @@ void printCode() {
     if (breakpoint && breakpoint == j) printf(" (*)");
     puts("");
   }
+
   printf("*****************\n");
 }
 
@@ -449,7 +442,7 @@ void debug() {
 
 void run() {
   // Arquitectura de Von Neumann
-  memcpy(&(machine.memory), &code, count*SIZE_INSTRUCTION);
+  memcpy(&(machine.memory), &code, count * SIZE_INSTRUCTION);
 
   // Ciclo de ejecucion
   struct Instruction i;
@@ -484,14 +477,14 @@ void init(int argc, char** argv) {
   machine.reg[R3] = 0;
 
   // Inicializa memoria
-  for(int i = 0; i < MEM_SIZE; i++) machine.memory[i] = 0;
+  for (int i = 0; i < MEM_SIZE; i++) machine.memory[i] = 0;
 
   // Argumentos por linea de comando
   if (argc > 2) machine.reg[R0] = atoi(argv[2]);
   if (argc > 3) machine.reg[R1] = atoi(argv[3]);
   if (argc > 4) machine.reg[R2] = atoi(argv[4]);
   if (argc > 5) machine.reg[R3] = atoi(argv[5]);
-  for (int i = argc-1; i > 5; i--) {
+  for (int i = argc - 1; i > 5; i--) {
     machine.reg[SP]--;
     machine.memory[machine.reg[SP]] = atoi(argv[i]);
   }
