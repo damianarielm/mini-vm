@@ -29,61 +29,29 @@
 #define UNSET_EQUAL machine.reg[FLAGS] = (machine.reg[FLAGS] & ~(1<<(EQUAL_BIT_FLAGS)))
 #define UNSET_LOWER machine.reg[FLAGS] = (machine.reg[FLAGS] & ~(1<<(LOWER_BIT_FLAGS)))
 
-typedef enum { ZERO,
-            PC,
-            SP,
-            R0,
-            R1,
-            R2,
-            R3,
-            FLAGS
-} Registers ;
-
-typedef enum { IMM, REG, MEM, LABELOP } OperandType ;
+typedef enum { ZERO, PC, SP, R0, R1, R2, R3, FLAGS } Registers;
+typedef enum { IMM, REG, MEM, LABELOP } OperandType;
 
 struct Operand {
   const char *lab;
   OperandType type;
   int val;
-} ;
+};
 
-typedef enum {
-  NOP,
-  MOV,
-  AND,
-  LW,
-  SW,
-  PUSH,
-  POP,
-  CALL,
-  RET,
-  PRINT,
-  READ,
-  ADD,
-  SUB,
-  MUL,
-  DIV,
-  CMP,
-  JMP,
-  JMPE,
-  JMPL,
-  HLT,
-  LABEL,
-  DMP,
-  DBG,
-  SEG
-} Opcode;
+typedef enum { NOP, MOV, AND, LW, SW, PUSH, POP, CALL, RET, PRINT,
+               READ, ADD, SUB, MUL, DIV, CMP, JMP, JMPE, JMPL, HLT,
+               LABEL, DMP, DBG, SEG } Opcode;
 
 struct Instruction {
   Opcode op;
   struct Operand src;
   struct Operand dst;
-} ;
+};
 
 struct Machine {
   int reg[REGS];
   int memory[MEM_SIZE];
-} ;
+};
 
 extern int count;
 extern struct Instruction code[512];

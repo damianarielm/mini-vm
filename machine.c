@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,10 +8,10 @@
 // Variables globales
 int count; // Lineas de codigo
 struct Instruction code[512]; // Arreglo de instrucciones
-const char *regname[REGS] = { "\%zero", "\%pc", "\%sp", "\%r0",
+const char* regname[REGS] = { "\%zero", "\%pc", "\%sp", "\%r0",
                               "\%r1","\%r2","\%r3", "\%flags" };
 struct Machine machine;
-extern FILE *yyin;
+extern FILE* yyin;
 
 // Banderas del depurador
 char next = 0;
@@ -22,14 +21,14 @@ char breakpoint = 0;
 int reg(const char* r) {
   r++; // Skip %
 
-  if (!strcmp(r, "zero"))  return 0;
-  if (!strcmp(r, "pc"))    return 1;
-  if (!strcmp(r, "sp"))    return 2;
-  if (!strcmp(r, "r0"))    return 3;
-  if (!strcmp(r, "r1"))    return 4;
-  if (!strcmp(r, "r2"))    return 5;
-  if (!strcmp(r, "r3"))    return 6;
-  if (!strcmp(r, "flags")) return 7;
+  if (!strcmp(r, "zero"))  return ZERO;
+  if (!strcmp(r, "pc"))    return PC;
+  if (!strcmp(r, "sp"))    return SP;
+  if (!strcmp(r, "r0"))    return R0;
+  if (!strcmp(r, "r1"))    return R1;
+  if (!strcmp(r, "r2"))    return R2;
+  if (!strcmp(r, "r3"))    return R3;
+  if (!strcmp(r, "flags")) return FLAGS;
 
   printf("Unkown Register %s\n", r);
   abort();
@@ -43,8 +42,8 @@ void dumpMachine() {
 
   for (int i = 0; i < REGS; i++)
     if (strlen(regname[i])) {
-        printf("%d\t%s\t\t= ", i, regname[i]);
-        printf("%d\t(0x%x)\n", machine.reg[i], machine.reg[i]);
+      printf("%d\t%s\t\t= ", i, regname[i]);
+      printf("%d\t(0x%x)\n", machine.reg[i], machine.reg[i]);
     }
 
   puts("***************************************\n");
@@ -65,7 +64,7 @@ void dumpMemory() {
 }
 
 int origen(struct Operand o) {
-  switch(o.type) {
+  switch (o.type) {
     case IMM:
       return o.val;
     case REG:
@@ -82,7 +81,7 @@ int* destino(struct Operand o) {
   switch(o.type) {
     case REG:
       if (o.val == ZERO) {
-        printf("Error. Intentando modificar el registro zero.\n");
+        puts("Error. Intentando modificar el registro zero.");
         abort();
       } else {
         return &(machine.reg[o.val]);
@@ -106,100 +105,100 @@ void runIns(struct Instruction i) {
     case NOP:
       break;
     case MOV: {
-      *d2 = o1;
-      break;
-    }
+                *d2 = o1;
+                break;
+              }
     case SW:
-      machine.memory[o2] = o1;
-      break;
+              machine.memory[o2] = o1;
+              break;
     case LW: {
-      *d2 = machine.memory[o1];
-      break;
-    }
+               *d2 = machine.memory[o1];
+               break;
+             }
     case PUSH:
-      machine.reg[SP]--;
-      machine.memory[machine.reg[SP]] = o1;
-      break;
+             machine.reg[SP]--;
+             machine.memory[machine.reg[SP]] = o1;
+             break;
     case POP: {
-      *d1 = machine.memory[machine.reg[SP]];
-      machine.reg[SP]++;
-      break;
-    }
+                *d1 = machine.memory[machine.reg[SP]];
+                machine.reg[SP]++;
+                break;
+              }
     case CALL:
-      machine.reg[SP]--;
-      machine.memory[machine.reg[SP]] = machine.reg[PC];
-      machine.reg[PC] = o1 - 1;
-      break;
+              machine.reg[SP]--;
+              machine.memory[machine.reg[SP]] = machine.reg[PC];
+              machine.reg[PC] = o1 - 1;
+              break;
     case RET:
-      machine.reg[PC] = machine.memory[machine.reg[SP]];
-      machine.reg[SP]++;
-      break;
+              machine.reg[PC] = machine.memory[machine.reg[SP]];
+              machine.reg[SP]++;
+              break;
     case PRINT:
-      printf("%d\n", o1);
-      break;
+              printf("%d\n", o1);
+              break;
     case READ: {
-      scanf("%d", d1);
-      break;
-    }
+                 scanf("%d", d1);
+                 break;
+               }
     case ADD: {
-      *d2 = o1 + o2;
-      if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-      break;
-    }
+                *d2 = o1 + o2;
+                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
+                break;
+              }
     case SUB: {
-      *d2 = o1 - o2;
-      if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-      break;
-    }
+                *d2 = o1 - o2;
+                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
+                break;
+              }
     case MUL: {
-      *d2 = o1 * o2;
-      if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-      break;
-    }
+                *d2 = o1 * o2;
+                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
+                break;
+              }
     case DIV: {
-      *d2 = o1 / o2;
-      if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-      break;
-    }
+                *d2 = o1 / o2;
+                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
+                break;
+              }
     case AND: {
-      *d2 = o1 & o2;
-      if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
-      break;
-    }
+                *d2 = o1 & o2;
+                if (*d2 == 0) SET_ZERO; else UNSET_ZERO;
+                break;
+              }
     case CMP:
-      if (o1 == o2) {
-        UNSET_LOWER;
-        SET_EQUAL;
-      } else {
-        UNSET_EQUAL;
-        if (o1 < o2) SET_LOWER;
-      }
-      break;
+              if (o1 == o2) {
+                UNSET_LOWER;
+                SET_EQUAL;
+              } else {
+                UNSET_EQUAL;
+                if (o1 < o2) SET_LOWER;
+              }
+              break;
     case JMP:
-      machine.reg[PC] = o1 - 1;
-      break;
+              machine.reg[PC] = o1 - 1;
+              break;
     case JMPE:
-      if (ISSET_EQUAL) machine.reg[PC] = o1 - 1;
-      break;
+              if (ISSET_EQUAL) machine.reg[PC] = o1 - 1;
+              break;
     case JMPL:
-      if (ISSET_LOWER) machine.reg[PC] = o1 - 1;
-      break;
+              if (ISSET_LOWER) machine.reg[PC] = o1 - 1;
+              break;
     case DMP:
-      dumpMachine();
-      dumpMemory();
-      break;
+              dumpMachine();
+              dumpMemory();
+              break;
     case DBG:
-      if (ISSET_DEBUG) UNSET_DEBUG; else SET_DEBUG;
-      break;
+              if (ISSET_DEBUG) UNSET_DEBUG; else SET_DEBUG;
+              break;
     case SEG:
-      if (ISSET_SEGMENTATION) UNSET_SEGMENTATION; else SET_SEGMENTATION;
-      break;
+              if (ISSET_SEGMENTATION) UNSET_SEGMENTATION; else SET_SEGMENTATION;
+              break;
     case HLT:
-      machine.reg[PC]--;
-      break;
+              machine.reg[PC]--;
+              break;
     default:
-      printf("Instruction not implemented\n");
-      abort();
+              printf("Instruction not implemented\n");
+              abort();
   }
 }
 
@@ -363,7 +362,7 @@ void printInstr(struct Instruction i) {
 }
 
 struct Instruction* getInstruction(int linea) {
-    return (struct Instruction*) &(machine.memory[linea*SIZE_INSTRUCTION/sizeof(int)]);
+  return (struct Instruction*) &(machine.memory[linea*SIZE_INSTRUCTION/sizeof(int)]);
 }
 
 void printCode() {
