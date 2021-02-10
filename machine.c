@@ -17,23 +17,6 @@ extern FILE* yyin;
 char next = 0;
 char breakpoint = 0;
 
-// Devuelve el numero de registro
-int reg(const char* r) {
-  r++; // Skip %
-
-  if (!strcmp(r, "zero"))  return ZERO;
-  if (!strcmp(r, "pc"))    return PC;
-  if (!strcmp(r, "sp"))    return SP;
-  if (!strcmp(r, "r0"))    return R0;
-  if (!strcmp(r, "r1"))    return R1;
-  if (!strcmp(r, "r2"))    return R2;
-  if (!strcmp(r, "r3"))    return R3;
-  if (!strcmp(r, "flags")) return FLAGS;
-
-  printf("Unkown Register %s\n", r);
-  abort();
-}
-
 // Volcado de registros
 void dumpMachine() {
   printf("\n******* ");

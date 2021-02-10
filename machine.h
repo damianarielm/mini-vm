@@ -55,5 +55,3 @@ struct Machine {
 
 extern int count;
 extern struct Instruction code[512];
-
-int reg(const char*);
