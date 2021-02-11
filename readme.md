@@ -115,4 +115,31 @@ instrucción HTL.
 
 ### Sistema de segmentacion ###
 
+Cuando la bandera de segmentación está encendida, la máquina divide la memoria
+en dos segmentos: segmento de código y segmento de pila. De esta manera si se
+intenta escribir información en el segmento de código se producirá un error que
+interrumpirá la ejecución de la máuina.
+
 ### Unidad de depuración ###
+
+Si la bandera de dedpuración esta activada se interrumpe el flujo normal del
+programa y antes de cada instrucción se le da control a la correspondiente
+unidad. A partir de aqui podemos utilizar los siguientes comandos para
+controlar el comportamiento de la máquina:
+
+* h: Muestra la lista de comandos disponibles.
+* s: Devuelve el control a la unidad princial.
+* n: Apaga la bandera de depuración, devuelve el control a la unidad principal
+     y vuelve a interrumpir el flujo luego de ejecutarse una instrucción *RET*.
+* j: Setea el registro *PC* en el valor indicado.
+* b: Apaga la bandera de depuración, devuelve el control a la unidad princial
+     y vuelve a interrumpir el flujo antes de ejecutarse la instrucción indicada.
+* c: Modifica el valor de un registro o memoria.
+* r: Muestra información sobre los registros.
+* m: Muestra información sobre la memoria.
+* l: Muestre el código del programa.
+* w: Muestra la siguiente instrucción a ejecutar.
+* x: Muestra el valor guardado en una dirección de memoria.
+* q: Apaga la bandera de derpuración y devuelve el control a la unidad principal.
+
+Nótese que la unidad de depuración ignora las restriccion de segmentación.
