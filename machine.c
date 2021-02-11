@@ -1,6 +1,6 @@
 #include <stdio.h>       // fopen, fclose
 #include <stdlib.h>      // exit
-#include <string.h>      // strcmp, memcpy
+#include <string.h>      // strcmp, memcpy, memset
 
 #include "parser.tab.h"  // yyparse
 #include "machine.h"
@@ -150,33 +150,42 @@ void runIns(struct Instruction i) {
   }
 }
 
+// Cehquea que una instruccion sea un salto
+int checkJump(Opcode op) {
+    return op == CALL || op == JMP || op == JMPE || op == JMPL;
+}
+
+// Chequea que todas las etiquetas existan
+void checkLabels() {
+  for (int j = 0; j < count; j++)
+    if (checkJump(code[j].op))
+      if (code[j].src.lab) {
+        printf("Jump to unkown label %s\n", code[j].src.lab);
+        exit(1);
+      }
+}
+
 // Reemplaza las etiquetas por valores inmediatos
 void processLabels() {
-  int i, j, k;
-  for (i = 0; i < count; i++) // Recorre el codigo...
+  for (int i = 0; i < count; i++) // Recorre el codigo...
     if (code[i].op == LABEL) { // ...en busca de una etiqueta
-      for (j = 0; j < count; j++) // Recorre el codigo...
-        if (code[j].op == CALL || code[j].op == JMP || code[j].op== JMPE || code[j].op==JMPL) // ...buscando un salto
-          if (code[j].src.lab && strcmp(code[j].src.lab,code[i].src.lab) == 0) { // Si el salto corresponde a la etiqueta
+      for (int j = 0; j < count; j++) // Recorre el codigo...
+        if (checkJump(code[j].op)) // ...buscando un salto
+          if (code[j].src.lab && !strcmp(code[j].src.lab,code[i].src.lab)) {
+            // Si el salto corresponde a la etiqueta
             code[j].src.type = IMM;
             code[j].src.val = i; // Agrega el numero de linea
             code[j].src.lab = NULL; // Borra la etiqueta de la instruccion
           }
 
       // Borra la etiqueta del codigo
-      for (j = i; j < count - 1; j++)
+      for (int j = i; j < count - 1; j++)
         code[j] = code[j + 1];
 
       count--;
     }
 
-  // Chequea que todas las etiquetas existan
-  for (j = 0; j < count; j++)
-    if (code[j].op == CALL || code[j].op == JMP || code[j].op == JMPE || code[j].op == JMPL)
-      if (code[j].src.lab) {
-        printf("Jump to unkown label %s\n", code[j].src.lab);
-        exit(1);
-      }
+  checkLabels();
 }
 
 void run() {
@@ -216,7 +225,7 @@ void init(int argc, char** argv) {
   machine->reg[R3] = 0;
 
   // Inicializa memoria
-  for (int i = 0; i < MEM_SIZE; i++) machine->memory[i] = 0;
+  memset(machine->memory, 0, MEM_SIZE * sizeof(int));
 
   // Argumentos por linea de comando
   if (argc > 2) machine->reg[R0] = atoi(argv[2]);
